@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.studp.dto.UserDTO;
 import com.studp.utils.UserHolder;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -18,6 +19,7 @@ import static com.studp.utils.RedisConstants.LOGIN_USER_KEY;
 import static com.studp.utils.RedisConstants.LOGIN_USER_TTL;
 
 @RequiredArgsConstructor
+@Slf4j
 public class RefreshTokenInterceptor implements HandlerInterceptor {
 
     private final StringRedisTemplate stringRedisTemplate;
@@ -25,7 +27,8 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 1.从消息头部获取token
-        String token = request.getHeader("authorization");
+        String token = request.getHeader("Authorization");
+//        log.info("[RefreshTokenInterceptor(1)] 校验和更新token，token={}", token);
         if(StrUtil.isBlank(token)){
             return true;  // 没登陆，不需要更新，直接放行，交给下一个拦截器
         }
@@ -33,6 +36,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         String key = LOGIN_USER_KEY + token;
         Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(key);
         if(userMap.isEmpty()){ // 用户不存在
+            log.info("[RefreshTokenInterceptor(1)] 校验token，用户不存在，tokenKey={}", key);
             return false;
         }
         // 3.HashMap --> UserDTO
@@ -42,7 +46,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         UserHolder.saveUser(userDTO);
         // 5.刷新redis中token有效期（10分钟）
         stringRedisTemplate.expire(key, LOGIN_USER_TTL, TimeUnit.MINUTES);
-
+//        log.info("[RefreshTokenInterceptor(1)] 更新成功：到期时间：{} 分钟", LOGIN_USER_TTL / 60);
         return true;
     }
 

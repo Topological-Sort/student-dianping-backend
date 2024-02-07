@@ -74,7 +74,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             // TODO: 注册新用户（User + UserInfo），存入数据库
             user = this.createUserWithPhone(loginForm); // 并返回存储结果user
         }
-
 //        // 4.登录并保存用户信息到session
 //        session.setAttribute("user", BeanUtil.copyProperties(user, UserDTO.class));
 //        // 5.返回成功，无数据

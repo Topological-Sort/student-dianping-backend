@@ -14,7 +14,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IVoucherOrderService extends IService<VoucherOrder> {
 
-    Result<Long> saveSeckillVoucher(Long voucherId);
+    Result<Long> saveSeckillVoucherOrder(Long voucherId) throws InterruptedException;
 
-    Result<Long> createVoucherOrder(Long voucherId);
+
+    // 悲观锁实现子方法
+//    Result<Long> createVoucherOrder(Long voucherId, Long id);
 }

@@ -1,4 +1,7 @@
-if (redis.call('get', KEYS[1]) == ARGV[1]) then
-    return redis.call('del', KEYS[1])
+local lockKey = KEYS[1]
+local threadId = ARGV[1]
+
+if (redis.call('get', lockKey) == threadId) then
+    return redis.call('del', lockKey)
 end
 return 0

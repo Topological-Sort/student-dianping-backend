@@ -32,8 +32,8 @@ public class VoucherOrderController {
      * @return 订单id
      */
     @PostMapping("seckill/{id}")
-    public Result<Long> seckillVoucher(@PathVariable("id") Long voucherId) {
-        log.info("【SecKill】用户抢购秒杀券：id={}", voucherId);
-        return voucherOrderService.saveSeckillVoucher(voucherId);
+    public Result<Long> seckillVoucher(@PathVariable("id") Long voucherId) throws InterruptedException {
+        log.info("【VoucherOrder/seckillVoucher】用户抢购秒杀券：id={}", voucherId);
+        return voucherOrderService.saveSeckillVoucherOrder(voucherId);
     }
 }
