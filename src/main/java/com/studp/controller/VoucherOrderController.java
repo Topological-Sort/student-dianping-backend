@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
+
 /**
  * <p>
  *  前端控制器
@@ -21,10 +23,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Slf4j
 @RequestMapping("/voucher-order")
-@RequiredArgsConstructor
 public class VoucherOrderController {
 
-    private final IVoucherOrderService voucherOrderService;
+    @Resource
+    private IVoucherOrderService voucherOrderService;
 
     /**
      * 用户下单秒杀券

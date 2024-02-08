@@ -1,7 +1,11 @@
 package com.studp.service;
 
+import com.studp.dto.Null;
+import com.studp.dto.Result;
 import com.studp.entity.Blog;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +17,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IBlogService extends IService<Blog> {
 
+    Result<Null> likeBlog(Long id);
+
+    Result<Blog> getBlogById(Long id);
+
+    Result<List<Blog>> pageQueryHotBlog(Integer current);
 }

@@ -31,10 +31,12 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
 
     private final StringRedisTemplate stringRedisTemplate;
 
+    private final VoucherMapper voucherMapper;
+
     @Override
-    public Result queryVoucherOfShop(Long shopId) {
+    public Result<List<Voucher>> queryVoucherOfShop(Long shopId) {
         // 查询优惠券信息
-        List<Voucher> vouchers = getBaseMapper().queryVoucherOfShop(shopId);
+        List<Voucher> vouchers = voucherMapper.queryVoucherOfShop(shopId);
         // 返回结果
         return Result.ok(vouchers);
     }
@@ -51,8 +53,9 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
         seckillVoucher.setBeginTime(voucher.getBeginTime());
         seckillVoucher.setEndTime(voucher.getEndTime());
         seckillVoucherService.save(seckillVoucher);
-        // 保存秒杀券【库存】到缓存
+        // 保存秒杀券的【库存】字段到缓存
         stringRedisTemplate.opsForValue()
-                .set(RedisConstants.SECKILL_STOCK_KEY + voucher.getId(), voucher.getStock().toString());
+                .set(RedisConstants.SECKILL_STOCK_KEY + voucher.getId(),
+                        voucher.getStock().toString());
     }
 }

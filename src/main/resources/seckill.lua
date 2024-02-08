@@ -21,6 +21,7 @@ end
 redis.call('incrby', stockKey, -1);         -- 扣减库存
 redis.call('sadd', voucherSetKey, userId);  -- 标记该用户已购买该秒杀券
 
--- 创建stream流（消息队列），交给异步线程/消息队列处理
-redis.call('xadd', 'stream.orders', '*', 'id', orderId, 'userId', userId, 'voucherId', voucherId)
+-- 创建stream流（redis消息队列），将创建订单任务交给异步线程处理
+redis.call('xadd', 'stream.orders', '*',
+           'id', orderId, 'userId', userId, 'voucherId', voucherId)
 return "ok";  -- 购买成功，返回
