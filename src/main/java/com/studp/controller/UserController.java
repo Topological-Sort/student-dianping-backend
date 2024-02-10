@@ -1,17 +1,25 @@
 package com.studp.controller;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import com.studp.dto.Null;
 import com.studp.dto.LoginFormDTO;
 import com.studp.dto.Result;
+import com.studp.dto.UserDTO;
+import com.studp.entity.Blog;
+import com.studp.entity.User;
 import com.studp.entity.UserInfo;
 import com.studp.service.IUserInfoService;
 import com.studp.service.IUserService;
+import com.studp.utils.SystemConstants;
+import com.studp.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 /**
  * <p>
@@ -51,20 +59,25 @@ public class UserController {
         return userService.login(loginForm, session);
     }
 
+    // 根据id查询用户DTO
+    @GetMapping("/{id}")
+    public Result<UserDTO> queryUserById(@PathVariable("id") Long userId){
+        return userService.queryUserById(userId);
+    }
+
     /**
      * 登出功能
      * @return 无
      */
     @PostMapping("/logout")
-    public Result<?> logout(){
-        // TODO 实现登出功能
-        return Result.fail("功能未完成");
+    public Result<Null> logout(HttpServletRequest request){
+        return userService.logout(request);
     }
 
     @GetMapping("/me")
-    public Result<?> me(){
-        // TODO 获取当前登录的用户并返回
-        return Result.fail("功能未完成");
+    public Result<UserDTO> me(){
+        Long userId = UserHolder.getUser().getId();
+        return userService.queryUserById(userId);
     }
 
     @GetMapping("/info/{id}")

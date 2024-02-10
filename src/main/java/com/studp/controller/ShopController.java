@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * <p>
  * 前端控制器
@@ -35,7 +37,7 @@ public class ShopController {
      */
     @GetMapping("/{id}")
     public Result<Shop> queryShopById(@PathVariable("id") Long id) {
-        log.info("【Shop】查询店铺：id={}", id);
+//        log.info("【Shop】查询店铺：id={}", id);
         return shopService.queryShopById(id);
     }
 
@@ -70,10 +72,9 @@ public class ShopController {
      * @return 商铺列表
      */
     @GetMapping("/of/type")
-    public Result queryShopByType(
+    public Result<List<Shop>> queryShopByType(
             @RequestParam("typeId") Integer typeId,
-            @RequestParam(value = "current", defaultValue = "1") Integer current
-    ) {
+            @RequestParam(value = "current", defaultValue = "1") Integer current) {
         // 根据类型分页查询
         Page<Shop> page = shopService.query()
                 .eq("type_id", typeId)
@@ -91,8 +92,7 @@ public class ShopController {
     @GetMapping("/of/name")
     public Result queryShopByName(
             @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "current", defaultValue = "1") Integer current
-    ) {
+            @RequestParam(value = "current", defaultValue = "1") Integer current) {
         // 根据类型分页查询
         Page<Shop> page = shopService.query()
                 .like(StrUtil.isNotBlank(name), "name", name)

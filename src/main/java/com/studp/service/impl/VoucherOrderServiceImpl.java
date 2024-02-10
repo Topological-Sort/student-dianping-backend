@@ -105,12 +105,13 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         private void handlePendingList() {
             while (true) {
                 try {
-                    // 1.获取pending-list中的订单信息 XREADGROUP GROUP g1 c1 COUNT 1 BLOCK 2000 STREAMS s1 0
+                    // 1.获取pending-list中的订单信息
+                    // XREADGROUP GROUP g1 c1 COUNT 1 BLOCK 2000 STREAMS s1 0
                     List<MapRecord<String, Object, Object>> list =
-                            stringRedisTemplate.opsForStream()
-                                    .read(  Consumer.from("g1", "c1"),
-                                            StreamReadOptions.empty().count(1).block(Duration.ofSeconds(2)),
-                                            StreamOffset.create("stream.orders", ReadOffset.from("0")) );
+                            stringRedisTemplate.opsForStream().read(
+                                    Consumer.from("g1", "c1"),
+                                    StreamReadOptions.empty().count(1).block(Duration.ofSeconds(2)),
+                                    StreamOffset.create("stream.orders", ReadOffset.from("0")) );
                     // 2.判断订单信息是否为空
                     if (list == null || list.isEmpty()) {
                         // 如果为null，说明没有异常消息，结束循环
@@ -275,8 +276,8 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 //        /* 2.分布式锁原子操作，分布式锁代替悲观锁(悲观锁只能解决非集群环境下的并发异常)
 //            (1) 一人一单（select）
 //            (2) 扣减库存（update）
-//            (3) 创建订单（insert） */
-//        // 分布式锁
+//            (3) 创建订单（insert）
+////        // 分布式锁 */
 //        Long userId = UserHolder.getUser().getId();
 //        // redisson库函数
 //        RLock lock = redissonClient.getLock("lock:order:" + userId);

@@ -15,6 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.studp.utils.RedisConstants.SECKILL_SET;
+import static com.studp.utils.RedisConstants.SECKILL_STOCK_KEY;
+
 /**
  * <p>
  *  服务实现类
@@ -54,8 +57,11 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
         seckillVoucher.setEndTime(voucher.getEndTime());
         seckillVoucherService.save(seckillVoucher);
         // 保存秒杀券的【库存】字段到缓存
-        stringRedisTemplate.opsForValue()
-                .set(RedisConstants.SECKILL_STOCK_KEY + voucher.getId(),
-                        voucher.getStock().toString());
+        stringRedisTemplate.opsForValue().set(
+                SECKILL_STOCK_KEY + voucher.getId(),
+                voucher.getStock().toString());
+        // 设置购买了秒杀券的用户id集合
+        stringRedisTemplate.opsForSet().add(
+                SECKILL_SET + voucher.getId(), "");
     }
 }

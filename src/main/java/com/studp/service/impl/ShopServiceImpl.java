@@ -7,12 +7,14 @@ import com.studp.mapper.ShopMapper;
 import com.studp.service.IShopService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.studp.utils.CacheClient;
-import com.studp.utils.TTLConstants;
+import com.studp.utils.RedisConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
+
+import static com.studp.utils.RedisConstants.CACHE_SHOP_TTL;
 
 /**
  * <p>
@@ -32,8 +34,10 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
     @Override
     public Result<Shop> queryShopById(Long id) {  // ""cache + Mutex
+        // 防缓存击穿：若缓存失效，所有线程对mysql的查询互斥
         Shop shop = cacheClient.queryWithMutex(
-                id, Shop.class, this::getById, TTLConstants.TTL, TimeUnit.SECONDS);
+                id, Shop.class, this::getById,
+                CACHE_SHOP_TTL, TimeUnit.SECONDS);
         return Result.ok(shop);
     }
 

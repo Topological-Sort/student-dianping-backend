@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.studp.dto.Null;
 import com.studp.dto.LoginFormDTO;
 import com.studp.dto.Result;
+import com.studp.dto.UserDTO;
 import com.studp.entity.User;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -23,4 +25,8 @@ public interface IUserService extends IService<User> {
     Result<String> login(LoginFormDTO loginForm, HttpSession session);
 
     Result<Null> sendCode(String phone, HttpSession session);
+
+    Result<UserDTO> queryUserById(Long userId);
+
+    Result<Null> logout(HttpServletRequest request);
 }

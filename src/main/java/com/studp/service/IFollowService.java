@@ -1,7 +1,12 @@
 package com.studp.service;
 
+import com.studp.dto.Null;
+import com.studp.dto.Result;
+import com.studp.dto.UserDTO;
 import com.studp.entity.Follow;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +18,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IFollowService extends IService<Follow> {
 
+    Result<Null> follow(Long id, Boolean isFollow);
+
+    Result<Boolean> isFollow(Long id);
+
+
+    Result<List<UserDTO>> commonFollow(Long id);
 }
