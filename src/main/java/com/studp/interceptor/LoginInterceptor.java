@@ -35,8 +35,8 @@ public class LoginInterceptor implements HandlerInterceptor {
             return false;
         }
         // 用户不存在或token已过期，缓存被删除
-        if (!stringRedisTemplate.hasKey(tokenKey)){
-            log.info("[UserInterceptor(0)] 登陆状态已过期 ");
+        if (Boolean.FALSE.equals(stringRedisTemplate.hasKey(tokenKey))){
+            log.info("[UserInterceptor(0)] 用户不存在或登陆状态已过期：tokenKey = {} ", tokenKey);
             response.setStatus(401);
             return false;
         }

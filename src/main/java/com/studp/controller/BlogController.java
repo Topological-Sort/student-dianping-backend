@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>
@@ -42,7 +43,7 @@ public class BlogController {
         // 获取登录用户
         Long userId = UserHolder.getUser().getId();
         blog.setUserId(userId);
-//        log.info("【Blog/saveBlog】用户id = {}，保存博客：{}", userId, blog);
+        log.info("【Blog/saveBlog】用户保存博客 userId = {}, blog = {}", userId, blog);
         // 保存探店博文
         blogService.save(blog);
         // 返回id
@@ -51,15 +52,19 @@ public class BlogController {
 
     @GetMapping("/{id}")
     public Result<Blog> getBlog(@PathVariable Long id) {
-//        log.info("【Blog/getBlog】blogId = {}", id);
+        log.info("【Blog/getBlog】查看博客详情，blogId = {}", id);
         // 查询时还需要设置isLike字段值
         return blogService.getBlogById(id);
     }
 
+    /**
+     * 获取为当前博客点赞的前5个用户信息
+     * @param id 博客id
+     * @return 用户信息(UserDTO) 列表
+     */
     @GetMapping("/likes/{id}")
-    public Result<Integer> getBlogLikes(@PathVariable Long id) {
-        Integer likes = blogService.getById(id).getLiked();
-        return Result.ok(likes);
+    public Result<List<UserDTO>> queryBlogLikes(@PathVariable Long id) {
+        return blogService.queryBlogLikes(id);
     }
 
     @PutMapping("/like/{id}")
@@ -67,17 +72,23 @@ public class BlogController {
         return blogService.likeBlog(id);
     }
 
+    /**
+     * 分页查询博主发表的博客
+     * @param current 当前页码
+     * @param id 博主id
+     * @return 博客列表
+     */
+    @GetMapping("/of/user")
+    public Result<List<Blog>> pageQueryUserBlog(
+            @RequestParam(value = "current", defaultValue = "1") Integer current,
+            @RequestParam("id") Long id) {
+        return blogService.pageQueryUserBlog(current, id);
+    }
     @GetMapping("/of/me")
-    public Result queryMyBlog(@RequestParam(value = "current", defaultValue = "1") Integer current) {
-        // 获取登录用户
-        UserDTO user = UserHolder.getUser();
-        // 根据用户查询
-        Page<Blog> page = blogService.query()
-                .eq("user_id", user.getId())
-                .page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
-        // 获取当前页数据
-        List<Blog> records = page.getRecords();
-        return Result.ok(records);
+    public Result<List<Blog>> queryMyBlog(
+            @RequestParam(value = "current", defaultValue = "1") Integer current) {
+        Long userId = UserHolder.getUser().getId();
+        return blogService.pageQueryUserBlog(current, userId);
     }
 
     @GetMapping("/hot")

@@ -15,6 +15,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import static com.studp.utils.RedisConstants.CACHE_NULL_TTL;
+
 /**
  * 两种能解决缓存穿透、缓存击穿的set和query缓存建立和查询方法
  * 缓存击穿分别用互斥锁、逻辑过期时间实现
@@ -71,7 +73,7 @@ public class CacheClient {
             // 2.2 获取锁成功
             r = dbFallback.apply(id);  // 查询数据库
             if(r == null)  // 防止缓存穿透
-                set(key, "", TTLConstants.CACHE_EMPTY_TTL, TimeUnit.SECONDS);
+                set(key, "", CACHE_NULL_TTL, TimeUnit.SECONDS);
             else  // 建立缓存
                 set(key, r, ttl, unit);
             return r; // 返回查询结果
@@ -112,7 +114,7 @@ public class CacheClient {
                 // 2.2 获取锁成功
                 r = dbFallback.apply(id);  // 查询数据库
                 if(r == null)    // 防止缓存穿透
-                    set(key, "", TTLConstants.CACHE_EMPTY_TTL, TimeUnit.SECONDS);
+                    set(key, "", CACHE_NULL_TTL, TimeUnit.SECONDS);
                 else  // 建立缓存
                     setWithLogicalExpire(key, r, ttl, unit);
                 return r; // 返回查询结果

@@ -12,12 +12,15 @@ import com.studp.dto.UserDTO;
 import com.studp.entity.User;
 import com.studp.mapper.UserMapper;
 import com.studp.service.IUserService;
+import com.studp.utils.RedisConstants;
 import com.studp.utils.RegexUtils;
+import com.studp.utils.UserHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import java.util.HashMap;
@@ -42,6 +45,7 @@ import static com.studp.utils.SystemConstants.USER_NICK_NAME_PREFIX;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
     private final StringRedisTemplate stringRedisTemplate;
+    private final UserMapper userMapper;
 
     @Override
     public User createUserWithPhone(LoginFormDTO loginForm) {
@@ -51,6 +55,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 .nickName(USER_NICK_NAME_PREFIX + RandomUtil.randomString(10))
                 .build();
         this.save(user);
+        log.info("[User/createUserWithPhone] 创建新用户，新用户id = {}", user.getId());
         return user;
     }
 
@@ -60,6 +65,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if(!RegexUtils.isPhoneInvalid(loginForm.getPhone())){
             Result.fail("手机号格式错误！");
         }
+        // TODO:为了生成测试token，可以暂时跳过验证码阶段
         // 2.校验验证码
         Object cacheCode = session.getAttribute("code");
         String code = loginForm.getCode();
@@ -71,7 +77,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 .eq(User::getPhone, loginForm.getPhone())
                 .one();
         if(user == null){  // 如果不存在，则自动注册新用户，存入数据库
-            // TODO: 注册新用户（User + UserInfo），存入数据库
             user = this.createUserWithPhone(loginForm); // 并返回存储结果user
         }
 //        // 4.登录并保存用户信息到session
@@ -111,6 +116,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 4.发送验证码
         log.info("验证码发送成功：{}", code);
         // 5.返回成功消息
+        return Result.ok();
+    }
+
+    @Override
+    public Result<UserDTO> queryUserById(Long userId) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return Result.fail("用户不存在！");
+        }
+        UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
+        return Result.ok(userDTO);
+    }
+
+    @Override
+    public Result<Null> logout(HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        // 清除当前用户对应的在redis中的token
+        String tokenKey = LOGIN_USER_KEY + token;
+        stringRedisTemplate.delete(tokenKey);
         return Result.ok();
     }
 }
