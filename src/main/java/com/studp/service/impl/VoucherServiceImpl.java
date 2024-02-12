@@ -7,7 +7,6 @@ import com.studp.mapper.VoucherMapper;
 import com.studp.entity.SeckillVoucher;
 import com.studp.service.ISeckillVoucherService;
 import com.studp.service.IVoucherService;
-import com.studp.utils.RedisConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -15,17 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.studp.utils.RedisConstants.SECKILL_SET;
+import static com.studp.utils.RedisConstants.SECKILL_SET_KEY;
 import static com.studp.utils.RedisConstants.SECKILL_STOCK_KEY;
 
-/**
- * <p>
- *  服务实现类
- * </p>
- *
- * @author 虎哥
- * @since 2021-12-22
- */
 @Service
 @RequiredArgsConstructor
 public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> implements IVoucherService {
@@ -62,6 +53,6 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
                 voucher.getStock().toString());
         // 设置购买了秒杀券的用户id集合
         stringRedisTemplate.opsForSet().add(
-                SECKILL_SET + voucher.getId(), "");
+                SECKILL_SET_KEY + voucher.getId(), "");
     }
 }

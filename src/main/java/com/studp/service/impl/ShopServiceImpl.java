@@ -1,5 +1,8 @@
 package com.studp.service.impl;
 
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.studp.dto.Null;
 import com.studp.dto.Result;
 import com.studp.entity.Shop;
@@ -7,23 +10,22 @@ import com.studp.mapper.ShopMapper;
 import com.studp.service.IShopService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.studp.utils.CacheClient;
-import com.studp.utils.RedisConstants;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResult;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.domain.geo.GeoReference;
 import org.springframework.stereotype.Service;
 
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.studp.utils.RedisConstants.CACHE_SHOP_TTL;
+import static com.studp.utils.RedisConstants.SHOP_GEO_KEY;
+import static com.studp.utils.SystemConstants.DEFAULT_PAGE_SIZE;
 
-/**
- * <p>
- *  服务实现类
- * </p>
- *
- * @author 虎哥
- * @since 2021-12-22
- */
 @Service
 @RequiredArgsConstructor
 public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IShopService {
@@ -53,5 +55,55 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         //            一旦更新后，缓存又会被覆盖）
         stringRedisTemplate.delete("cache:shop:" + shop.getId());
         return Result.ok();
+    }
+
+    @Override
+    public Result<List<Shop>> pageQueryShopByType(Integer typeId, Integer current, Double x, Double y) {
+        /* 1.不需要按位置查询，直接查询返回 */
+        if (x == null || y == null) {
+            Page<Shop> page = shopMapper.selectPage(
+                    new Page<>(current, DEFAULT_PAGE_SIZE), // 5
+                    new LambdaQueryWrapper<Shop>().eq(Shop::getTypeId, typeId) );
+            List<Shop> shops = page.getRecords();
+            return Result.ok(shops);
+        }
+        /* 2.计算分页参数，查询redis，GeoResult：[shopId、distance] */
+        int from = (current - 1) * DEFAULT_PAGE_SIZE;
+        int end = current * DEFAULT_PAGE_SIZE;
+        String key = SHOP_GEO_KEY + typeId;
+        GeoResults<RedisGeoCommands.GeoLocation<String>> results = stringRedisTemplate
+            .opsForGeo().search(
+                key, GeoReference.fromCoordinate(x, y),
+                new Distance(5000),
+                RedisGeoCommands.GeoSearchCommandArgs.newGeoSearchArgs().includeDistance().limit(end)
+            );
+        if (results == null){    // 该类别下无店铺
+            return Result.ok(Collections.emptyList());
+        }
+        List<GeoResult<RedisGeoCommands.GeoLocation<String>>> list = results.getContent(); // 转为list形式
+        if (list.size() <= from) {  // 没有下一页了
+            return Result.ok(Collections.emptyList());
+        }
+        /* 3.分页查询，截取from ~ end的记录 */
+        List<Long> ids = new ArrayList<>(list.size());  // 店铺id
+        Map<Long, Distance> distanceMap = new HashMap<>(list.size()); // 店铺id -> 距离
+        list.stream().skip(from).forEach(result -> {  // 获取从from开始的记录
+            // 3.1 获取店铺id
+            String shopIdStr = result.getContent().getName();
+            Long shopId = Long.valueOf(shopIdStr);
+            ids.add(shopId);
+            // 3.2 获取到店铺的距离
+            Distance distance = result.getDistance();
+            distanceMap.put(shopId, distance);
+        });
+        // 3.3 根据id查询Shop
+        String idStr = StrUtil.join(",", ids);
+        List<Shop> shops = shopMapper.selectList(
+                new LambdaQueryWrapper<Shop>()
+                        .in(Shop::getId, ids)
+                        .last("ORDER BY FIELD(id, " + idStr + ")") );
+        // 3.4 添加距离字段
+        shops.forEach(shop -> shop.setDistance(distanceMap.get(shop.getId()).getValue()) );
+        return Result.ok(shops);
     }
 }

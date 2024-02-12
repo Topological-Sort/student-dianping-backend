@@ -72,15 +72,12 @@ public class ShopController {
      * @return 商铺列表
      */
     @GetMapping("/of/type")
-    public Result<List<Shop>> queryShopByType(
+    public Result<List<Shop>> pageQueryShopByType(
             @RequestParam("typeId") Integer typeId,
-            @RequestParam(value = "current", defaultValue = "1") Integer current) {
-        // 根据类型分页查询
-        Page<Shop> page = shopService.query()
-                .eq("type_id", typeId)
-                .page(new Page<>(current, SystemConstants.DEFAULT_PAGE_SIZE));
-        // 返回数据
-        return Result.ok(page.getRecords());
+            @RequestParam(value = "current", defaultValue = "1") Integer current,
+            @RequestParam(value = "x", required = false) Double x,
+            @RequestParam(value = "y", required = false) Double y) {
+        return shopService.pageQueryShopByType(typeId, current, x, y);
     }
 
     /**
@@ -90,7 +87,7 @@ public class ShopController {
      * @return 商铺列表
      */
     @GetMapping("/of/name")
-    public Result queryShopByName(
+    public Result<List<Shop>> queryShopByName(
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "current", defaultValue = "1") Integer current) {
         // 根据类型分页查询

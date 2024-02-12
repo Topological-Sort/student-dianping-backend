@@ -4,8 +4,10 @@ package com.studp.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.studp.dto.Null;
 import com.studp.dto.Result;
+import com.studp.dto.ScrollResult;
 import com.studp.dto.UserDTO;
 import com.studp.entity.Blog;
+import com.studp.entity.Follow;
 import com.studp.entity.User;
 import com.studp.service.IBlogService;
 import com.studp.service.IUserService;
@@ -40,19 +42,11 @@ public class BlogController {
 
     @PostMapping
     public Result<Long> saveBlog(@RequestBody Blog blog) {
-        // 获取登录用户
-        Long userId = UserHolder.getUser().getId();
-        blog.setUserId(userId);
-        log.info("【Blog/saveBlog】用户保存博客 userId = {}, blog = {}", userId, blog);
-        // 保存探店博文
-        blogService.save(blog);
-        // 返回id
-        return Result.ok(blog.getId());
+        return blogService.saveBlog(blog);
     }
 
     @GetMapping("/{id}")
     public Result<Blog> getBlog(@PathVariable Long id) {
-        log.info("【Blog/getBlog】查看博客详情，blogId = {}", id);
         // 查询时还需要设置isLike字段值
         return blogService.getBlogById(id);
     }
@@ -84,11 +78,23 @@ public class BlogController {
             @RequestParam("id") Long id) {
         return blogService.pageQueryUserBlog(current, id);
     }
-    @GetMapping("/of/me")
-    public Result<List<Blog>> queryMyBlog(
+    @GetMapping("/of/me")  // 分页查询当前用户发表的博客
+    public Result<List<Blog>> pageQueryMyBlog(
             @RequestParam(value = "current", defaultValue = "1") Integer current) {
         Long userId = UserHolder.getUser().getId();
         return blogService.pageQueryUserBlog(current, userId);
+    }
+    /**
+     * 按发布时间降序，分页查询当前登录用户所关注的博主的博客，和上面两种分页查询存在区别
+     * @param max 上一次访问的时间戳最大（最近）的博客id
+     * @param offset 一页显示的博客数
+     * @return 关注博主的博客列表
+     */
+    @GetMapping("/of/follow")
+    public Result<ScrollResult<Blog>> pageQueryBlogOfFollow(
+            @RequestParam("lastId") Long max,
+            @RequestParam(value = "offset", defaultValue = "0") Integer offset){
+        return blogService.pageQueryBlogOfFollow(max, offset);
     }
 
     @GetMapping("/hot")
