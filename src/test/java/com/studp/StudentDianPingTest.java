@@ -1,21 +1,29 @@
 package com.studp;
 
 import cn.hutool.core.util.RandomUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.studp.dto.LoginFormDTO;
 import com.studp.dto.Result;
+import com.studp.entity.Shop;
 import com.studp.entity.TestTokens;
 import com.studp.mapper.ShopMapper;
 import com.studp.mapper.TestTokensMapper;
+import com.studp.service.IBlogService;
+import com.studp.service.IShopService;
 import com.studp.service.IUserService;
+import com.studp.utils.RedisConstants;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.geo.Point;
+import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.studp.utils.RedisConstants.SHOP_GEO_KEY;
 
 @SpringBootTest(classes = StudentDianPingApplication.class)
 public class StudentDianPingTest {
@@ -42,6 +50,33 @@ public class StudentDianPingTest {
             MapRecord<String, Object, Object> entries = list.get(0);
             Map<Object, Object> value = entries.getValue();
             System.out.println(value);
+        }
+    }
+
+    // 保存店铺地址位置信息到redis
+    @Resource
+    ShopMapper shopMapper;
+    @Test
+    void saveShopGEO(){
+        /* 1.根据类别将不同店铺分组 Map[typeId -> List<Shop>] */
+        List<Shop> total = shopMapper.list();
+        Map<Long, List<Shop>> shopMap = total.stream()
+                .collect(Collectors.groupingBy(Shop::getTypeId));
+        for (Map.Entry<Long, List<Shop>> entry : shopMap.entrySet()) {
+            Long typeId = entry.getKey();
+            List<Shop> shops = entry.getValue();
+            /* 2.将同类别的店铺保存在同一个GEO中:  typeId -> GEO[shopId, Point(x,y)] */
+            String geoKey = SHOP_GEO_KEY + typeId.toString();
+            List<RedisGeoCommands.GeoLocation<String>> locations = new ArrayList<>(shops.size());
+            for (Shop shop : shops) {
+//                stringRedisTemplate.opsForGeo().add(  // 方法一
+//                        geoKey, new Point(shop.getX(), shop.getY()), shop.getId().toString() );
+                locations.add(new RedisGeoCommands.GeoLocation<>(
+                        shop.getId().toString(),
+                        new Point(shop.getX(), shop.getY())
+                ));
+            }
+            stringRedisTemplate.opsForGeo().add(geoKey, locations);
         }
     }
 

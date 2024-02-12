@@ -5,6 +5,8 @@ import com.studp.dto.Result;
 import com.studp.entity.Shop;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * <p>
  *  服务类
@@ -18,4 +20,6 @@ public interface IShopService extends IService<Shop> {
     Result<Shop> queryShopById(Long id);
 
     Result<Null> updateShop(Shop shop);
+
+    Result<List<Shop>> pageQueryShopByType(Integer typeId, Integer current, Double x, Double y);
 }

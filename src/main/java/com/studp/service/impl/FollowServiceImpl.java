@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.studp.utils.RedisConstants.FOLLOW_SET;
+import static com.studp.utils.RedisConstants.FOLLOW_SET_KEY;
 
 @Service
 public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> implements IFollowService {
@@ -34,6 +34,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
 
     @Override
     public Result<Null> follow(Long id, Boolean isFollow) {
+        /* 1.follow表操作 */
         Long userId = UserHolder.getUser().getId();
         if (isFollow) {  // 关注
             Follow follow = Follow.builder()
@@ -45,8 +46,8 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
                     .eq(Follow::getUserId, userId)
                     .eq(Follow::getFollowUserId, id));
         }
-        /* 为了实现共同关注功能，更新当前userId的Set缓存 */
-        String key = FOLLOW_SET + userId.toString();
+        /* 2.为了实现共同关注功能，添加/更新当前userId的Set缓存 */
+        String key = FOLLOW_SET_KEY + userId.toString();
         String value = id.toString();
         if (isFollow)
             stringRedisTemplate.opsForSet().add(key, value);
@@ -69,8 +70,8 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
 
     @Override
     public Result<List<UserDTO>> commonFollow(Long id) {
-        String key1 = FOLLOW_SET + UserHolder.getUser().getId().toString(); // 当前登录的用户key
-        String key2 = FOLLOW_SET + id.toString(); // 点进去看到的用户key
+        String key1 = FOLLOW_SET_KEY + UserHolder.getUser().getId().toString(); // 当前登录的用户key
+        String key2 = FOLLOW_SET_KEY + id.toString(); // 点进去看到的用户key
         Set<String> set = stringRedisTemplate.opsForSet()
                 .intersect(List.of(key1, key2));// 获取交集
         if(set == null || set.isEmpty())

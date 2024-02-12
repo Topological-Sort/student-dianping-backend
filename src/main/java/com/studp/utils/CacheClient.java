@@ -5,10 +5,10 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,7 +24,7 @@ import static com.studp.utils.RedisConstants.CACHE_NULL_TTL;
 @Slf4j
 @Component
 public class CacheClient {
-    @Autowired
+    @Resource
     private StringRedisTemplate stringRedisTemplate;
 
     private static final ExecutorService CACHE_REBUILD_EXECUTOR = Executors.newFixedThreadPool(10);
@@ -61,7 +61,7 @@ public class CacheClient {
             return null; // 防止缓存穿透
         }
         /* 2.不存在缓存，互斥查数据库，设置缓存 */
-        R r = null;  // 查询结果
+        R r;  // 查询结果
         String lockKey = RedisConstants.getLockKey(type);
         try {
             boolean success = tryLock(lockKey);

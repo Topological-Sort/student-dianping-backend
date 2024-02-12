@@ -17,7 +17,33 @@
         <java.version>11</java.version>
     </properties>
     <dependencies>
-        <!--获取proxy代理对象-->
+        <!--exclusion-->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-data-redis</artifactId>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <artifactId>spring-data-redis</artifactId>-->
+<!--                    <groupId>org.springframework.data</groupId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <artifactId>lettuce-core</artifactId>-->
+<!--                    <groupId>io.lettuce</groupId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
+        <!--redis template-->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
+            <version>2.6.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+            <version>6.1.6.RELEASE</version>
+        </dependency>
+        <!--获取spring bean proxy代理对象-->
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
@@ -34,11 +60,6 @@
             <artifactId>redisson</artifactId>
             <version>3.13.6</version>
         </dependency>
-        <!--redis template-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
         <!--redis连接池-->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -54,7 +75,7 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
-            <version>5.1.47</version>
+            <version>8.0.22</version>
         </dependency>
         <!--lombok日志-->
         <dependency>
