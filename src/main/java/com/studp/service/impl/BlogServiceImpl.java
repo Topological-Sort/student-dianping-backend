@@ -144,15 +144,22 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
 
     @Override
     public Result<Long> saveBlog(Blog blog) {
+        if (blog.getShopId() == null) {
+            return Result.fail("关联商户不能为空");
+        }
+        if(blog.getTitle() == null) {
+            return Result.fail("请输入标题");
+        }
         /* 1.保存当前用户发的博客 */
         Long userId = UserHolder.getUser().getId();
         blog.setUserId(userId);
         this.save(blog);  // 保存后自动填充id（自增） blogMapper.insert(blog)不会自动填充id
         /* 2.将该博客 id 推送到所有关注了该用户的粉丝的 Z-SET 中 */
         List<Long> ids = followMapper.selectList(  // 查询关注了该博主的用户id
-                new LambdaQueryWrapper<Follow>().eq(Follow::getUserId, userId))
+                new LambdaQueryWrapper<Follow>()
+                        .eq(Follow::getFollowUserId, userId))
                 .stream()
-                .map(Follow::getId)
+                .map(Follow::getUserId)
                 .collect(Collectors.toList());
         ids.forEach(id -> {    // 存储到所有粉丝的 z-set中
             String feedKey = FEED_ZSET_KEY + id.toString();
