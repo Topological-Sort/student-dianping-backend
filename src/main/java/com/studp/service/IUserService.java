@@ -29,4 +29,8 @@ public interface IUserService extends IService<User> {
     Result<UserDTO> queryUserById(Long userId);
 
     Result<Null> logout(HttpServletRequest request);
+
+    Result<Null> sign();
+
+    Result<Integer> signCount();
 }

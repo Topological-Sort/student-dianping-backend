@@ -80,6 +80,22 @@ public class StudentDianPingTest {
         }
     }
 
+    @Test
+    void testHyperLogLog(){  // 测试unique visitor统计（用户活跃度 / 博客热度）
+        String[] users = new String[1000];
+        int k = 0;
+        // 10万用户进行共200万次访问
+        for (int i = 1; i <= 2000000; i++){
+            users[k++] = "user_" + i % 100000;  // 模拟用户id
+            if (i % 1000 == 0) {  // 每1000条记录一下
+                k = 0;
+                stringRedisTemplate.opsForHyperLogLog().add("hll1", users);
+            }
+        }
+        Long size = stringRedisTemplate.opsForHyperLogLog().size("hll1");
+        System.out.println("The number of unique visitor: "+size);
+    }
+
 //    // 生成测试用token，redis中不存在的token需要在mysql中去掉，再在mysql中导出csv/txt格式备用
 //    @Resource
 //    IUserService userService;
