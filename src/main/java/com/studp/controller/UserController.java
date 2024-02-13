@@ -74,12 +74,21 @@ public class UserController {
         return userService.logout(request);
     }
 
+    /**
+     * 获取个人基本信息
+     * @return 个人基本信息（id、用户名、头像）
+     */
     @GetMapping("/me")
     public Result<UserDTO> me(){
         Long userId = UserHolder.getUser().getId();
         return userService.queryUserById(userId);
     }
 
+    /**
+     * 查看用户详细信息
+     * @param userId 用户id
+     * @return 用户详细信息
+     */
     @GetMapping("/info/{id}")
     public Result<UserInfo> info(@PathVariable("id") Long userId){
         // 查询详情
@@ -92,5 +101,23 @@ public class UserController {
         info.setUpdateTime(null);
         // 返回
         return Result.ok(info);
+    }
+
+    /**
+     * 当前登录用户签到
+     * @return 无
+     */
+    @PostMapping("/sign")
+    public Result<Null> sign(){
+        return userService.sign();
+    }
+
+    /**
+     * 统计用户连续签到次数
+     * @return 连续签到次数
+     */
+    @GetMapping("/sign/count")
+    public Result<Integer> signCount(){
+        return userService.signCount();
     }
 }
