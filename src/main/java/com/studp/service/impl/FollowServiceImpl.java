@@ -2,7 +2,7 @@ package com.studp.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.studp.dto.Null;
+import com.studp.dto.Void;
 import com.studp.dto.Result;
 import com.studp.dto.UserDTO;
 import com.studp.entity.Follow;
@@ -33,7 +33,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     StringRedisTemplate stringRedisTemplate;  // 实现共同关注功能
 
     @Override
-    public Result<Null> follow(Long id, Boolean isFollow) {
+    public Result<Void> follow(Long id, Boolean isFollow) {
         /* 1.follow表操作 */
         Long userId = UserHolder.getUser().getId();
         if (isFollow) {  // 关注

@@ -4,7 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.studp.dto.Null;
+import com.studp.dto.Void;
 import com.studp.dto.Result;
 import com.studp.dto.ScrollResult;
 import com.studp.dto.UserDTO;
@@ -56,7 +56,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     StringRedisTemplate stringRedisTemplate;
 
     @Override
-    public Result<Null> likeBlog(Long id) {
+    public Result<Void> likeBlog(Long id) {
         String blogLikedKey = RedisConstants.BLOG_LIKED_KEY + id.toString();
         String userId = UserHolder.getUser().getId().toString();
         // 判断当前用户是否已经为这个博客点过赞（Z-SET -- "blogId": { [userId,score], ...}）

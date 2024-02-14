@@ -1,35 +1,20 @@
 package com.studp.controller;
 
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.studp.dto.Null;
+import com.studp.dto.Void;
 import com.studp.dto.Result;
 import com.studp.dto.ScrollResult;
 import com.studp.dto.UserDTO;
 import com.studp.entity.Blog;
-import com.studp.entity.Follow;
-import com.studp.entity.User;
 import com.studp.service.IBlogService;
 import com.studp.service.IUserService;
-import com.studp.utils.RedisConstants;
-import com.studp.utils.SystemConstants;
 import com.studp.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Set;
 
-/**
- * <p>
- * 前端控制器
- * </p>
- *
- * @author 虎哥
- * @since 2021-12-22
- */
 @RestController
 @Slf4j
 @RequestMapping("/blog")
@@ -62,7 +47,7 @@ public class BlogController {
     }
 
     @PutMapping("/like/{id}")
-    public Result<Null> likeBlog(@PathVariable("id") Long id) {
+    public Result<Void> likeBlog(@PathVariable("id") Long id) {
         return blogService.likeBlog(id);
     }
 

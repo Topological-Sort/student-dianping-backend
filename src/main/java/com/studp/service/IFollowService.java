@@ -1,6 +1,6 @@
 package com.studp.service;
 
-import com.studp.dto.Null;
+import com.studp.dto.Void;
 import com.studp.dto.Result;
 import com.studp.dto.UserDTO;
 import com.studp.entity.Follow;
@@ -18,7 +18,7 @@ import java.util.List;
  */
 public interface IFollowService extends IService<Follow> {
 
-    Result<Null> follow(Long id, Boolean isFollow);
+    Result<Void> follow(Long id, Boolean isFollow);
 
     Result<Boolean> isFollow(Long id);
 
