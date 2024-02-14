@@ -6,7 +6,5 @@ import java.time.LocalDateTime;
 
 @Data
 public class TestTokens {
-    Long id;
     String token;
-    LocalDateTime createTime;
 }

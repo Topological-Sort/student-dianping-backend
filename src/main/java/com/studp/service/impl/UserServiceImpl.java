@@ -57,7 +57,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 .nickName(USER_NICK_NAME_PREFIX + RandomUtil.randomString(10))
                 .build();
         this.save(user);
-        log.info("[User/createUserWithPhone] 创建新用户，新用户id = {}", user.getId());
         return user;
     }
 

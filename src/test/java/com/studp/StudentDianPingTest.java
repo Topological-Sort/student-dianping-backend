@@ -96,15 +96,15 @@ public class StudentDianPingTest {
         System.out.println("The number of unique visitor: "+size);
     }
 
-    // 临时关闭短信验证，生成测试用token，redis中不存在的token需要在mysql中去掉，再在mysql中导出csv/txt格式备用
+    // 生成测试用token，再在mysql中导出csv/txt格式备用
     @Resource
     IUserService userService;
     @Resource
     TestTokensMapper testTokensMapper;
     @Test
-    public void generateTokens(){
+    void generateTokens(){
         Random r = new Random();
-        for(int i = 0; i < 500; i++) {
+        for(int i = 0; i < 1200; i++) {
             LoginFormDTO form = new LoginFormDTO();
             form.setPhone("131" + RandomUtil.randomNumbers(8));
             Result<String> res =  userService.testLogin(form);
@@ -112,6 +112,17 @@ public class StudentDianPingTest {
             TestTokens testTokens = new TestTokens();
             testTokens.setToken(token);
             testTokensMapper.insert(testTokens);
+        }
+    }
+
+    // 测试数据
+    @Test
+    void addTestShops(){
+        for (int i = 0; i < 10000; i++) {
+            Shop shop = Shop.builder().area("beijing").address("123").x(10.1000).y(20.0000).avgPrice(30L)
+                    .name("1234").comments(47).score(47).sold(32).typeId(3L).openHours("123")
+                    .build();
+            shopMapper.insert(shop);
         }
     }
 }

@@ -3,7 +3,6 @@ package com.studp.controller;
 
 import com.studp.dto.Result;
 import com.studp.service.IVoucherOrderService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,7 +34,7 @@ public class VoucherOrderController {
      */
     @PostMapping("seckill/{id}")
     public Result<Long> seckillVoucher(@PathVariable("id") Long voucherId) throws InterruptedException {
-        log.info("【VoucherOrder/seckillVoucher】用户抢购秒杀券：id={}", voucherId);
+//        log.info("【VoucherOrder/seckillVoucher】用户抢购秒杀券：id={}", voucherId);
         return voucherOrderService.saveSeckillVoucherOrder(voucherId);
     }
 }

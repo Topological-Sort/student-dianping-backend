@@ -2,6 +2,7 @@ package com.studp.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.studp.annotation.RecordTime;
 import com.studp.dto.Result;
 import com.studp.entity.SeckillVoucher;
 import com.studp.entity.VoucherOrder;
@@ -40,6 +41,11 @@ import java.util.concurrent.Executors;
 @Service
 @Slf4j
 public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, VoucherOrder> implements IVoucherOrderService {
+    // 用于统计时间
+    private final Object lock1 = new Object();
+    private final Object lock2 = new Object();
+    private final Object lock3 = new Object();
+
     @Resource
     private SeckillVoucherMapper seckillVoucherMapper;
     @Resource
@@ -198,18 +204,36 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
      */
     @Override
     @Transactional
-    public Result<Long> saveSeckillVoucherOrder(Long voucherId) throws InterruptedException {
+    public Result<Long> saveSeckillVoucherOrder(Long voucherId){
         Long userId = UserHolder.getUser().getId();
-        Long orderId = redisIdWorker.nextId("order");
+        Long orderId;
+        synchronized (lock1) {
+            long t1_s = System.currentTimeMillis();
+            orderId = redisIdWorker.nextId("order");
+            long t1_e = System.currentTimeMillis();
+            String key = "generateId:time";
+            stringRedisTemplate.opsForHash().increment(key, "count", 1);
+            stringRedisTemplate.opsForHash().increment(key, "cost", t1_e - t1_s);
+            //log.error("【创建分布式id】耗时：{}", t1_e - t1_s);
+        }
         // 获取代理
         proxy = (IVoucherOrderService) AopContext.currentProxy();
         /* 1.合理性检验、一人一券、扣减库存 */
         /* 2.发送创建订单消息数据到Stream，由异步线程读取处理 */
-        String result = stringRedisTemplate.execute(
-                SECKILL_SCRIPT,
-                List.of(voucherId.toString()),
-                userId.toString(),
-                orderId.toString());
+        String result;
+        synchronized (lock2) {
+            long t2_s = System.currentTimeMillis();
+            result = stringRedisTemplate.execute(
+                    SECKILL_SCRIPT,
+                    List.of(voucherId.toString()),
+                    userId.toString(),
+                    orderId.toString());
+            long t2_e = System.currentTimeMillis();
+            //log.error("【执行lua脚本，进行合理性、一人一券、库存检验、发送stream流】耗时：{}", t2_e - t2_s);
+            String key = "lua:time";
+            stringRedisTemplate.opsForHash().increment(key, "count", 1);
+            stringRedisTemplate.opsForHash().increment(key, "cost", t2_e - t2_s);
+        }
         if (!"ok".equals(result)) {
             return Result.fail(result);
         }
@@ -228,7 +252,9 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
      * 持久化到mysql：扣减库存 + 创建订单
      * @param voucherOrder id(orderId), voucherId, userId
      */
-    public void createVoucherOrder(VoucherOrder voucherOrder) {
+    @RecordTime
+    public synchronized void createVoucherOrder(VoucherOrder voucherOrder) {
+        long t3_s = System.currentTimeMillis();
         /* 1.扣减库存（update） */
         SeckillVoucher voucher = BeanUtil.copyProperties(voucherOrder, SeckillVoucher.class);
         int lines = seckillVoucherMapper.update(voucher,  // lines: 操作影响的行数
@@ -245,6 +271,11 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         }
         /* 2.创建秒杀券订单（insert） */
         voucherOrderMapper.insert(voucherOrder);
+        long t3_e = System.currentTimeMillis();
+        //log.error("【Mysql扣减库存、创建秒杀订单】耗时：{}", t3_e - t3_s);
+        String key = "mysql:time";
+        stringRedisTemplate.opsForHash().increment(key, "count", 1);
+        stringRedisTemplate.opsForHash().increment(key, "cost", t3_e - t3_s);
     }
 
     /**
