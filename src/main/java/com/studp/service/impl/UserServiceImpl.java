@@ -5,14 +5,13 @@ import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.studp.dto.Null;
+import com.studp.dto.Void;
 import com.studp.dto.LoginFormDTO;
 import com.studp.dto.Result;
 import com.studp.dto.UserDTO;
 import com.studp.entity.User;
 import com.studp.mapper.UserMapper;
 import com.studp.service.IUserService;
-import com.studp.utils.RedisConstants;
 import com.studp.utils.RegexUtils;
 import com.studp.utils.UserHolder;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +57,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 .nickName(USER_NICK_NAME_PREFIX + RandomUtil.randomString(10))
                 .build();
         this.save(user);
-        log.info("[User/createUserWithPhone] 创建新用户，新用户id = {}", user.getId());
         return user;
     }
 
@@ -68,7 +66,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if(!RegexUtils.isPhoneInvalid(loginForm.getPhone())){
             Result.fail("手机号格式错误！");
         }
-        // TODO:为了生成测试token，可以暂时跳过验证码阶段
         // 2.校验验证码
         Object cacheCode = session.getAttribute("code");
         String code = loginForm.getCode();
@@ -82,11 +79,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if(user == null){  // 如果不存在，则自动注册新用户，存入数据库
             user = this.createUserWithPhone(loginForm); // 并返回存储结果user
         }
+//        /* Session+Cookie方式 */
 //        // 4.登录并保存用户信息到session
 //        session.setAttribute("user", BeanUtil.copyProperties(user, UserDTO.class));
 //        // 5.返回成功，无数据
 //        return Result.ok();
 
+        /* Token方式 */
         // 4.登录并保存token（随机字符串）到redis
         String token = UUID.randomUUID().toString(true);
             // 1.将User对象转为HashMap存储
@@ -106,8 +105,42 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return Result.ok(token);
     }
 
+    /**
+     * 压测模拟生成token
+     * @param loginForm 登录表单信息（主要是手机号）
+     * @return token
+     */
     @Override
-    public Result<Null> sendCode(String phone, HttpSession session) {
+    public Result<String> testLogin(LoginFormDTO loginForm) {
+        // 根据手机号查询用户
+        User user = this.lambdaQuery()
+                .eq(User::getPhone, loginForm.getPhone())
+                .one();
+        if(user == null){  // 如果不存在，则自动注册新用户，存入数据库
+            user = this.createUserWithPhone(loginForm); // 并返回存储结果user
+        }
+        /* Token方式 */
+        // 登录并保存token（随机字符串）到redis
+        String token = UUID.randomUUID().toString(true);
+        // 将User对象转为HashMap存储
+        UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
+        Map<String, Object> userMap = BeanUtil.beanToMap(userDTO, new HashMap<>(),
+                CopyOptions.create()
+                        .setIgnoreNullValue(true));
+//                        .setFieldValueEditor(
+//                                (fieldName, fieldValue) -> fieldValue.toString()));
+        userMap.replaceAll((s, v) -> v.toString());
+        // 存储
+        String tokenKey = LOGIN_USER_KEY + token;
+        stringRedisTemplate.opsForHash().putAll(tokenKey, userMap);
+        // 设置token有效期
+        stringRedisTemplate.expire(tokenKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
+        // 返回token
+        return Result.ok(token);
+    }
+
+    @Override
+    public Result<Void> sendCode(String phone, HttpSession session) {
 //        // 1.校验手机号格式
 //        if(!RegexUtils.isPhoneInvalid(phone)){
 //            return Result.fail("手机号格式错误！");
@@ -133,7 +166,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
-    public Result<Null> logout(HttpServletRequest request) {
+    public Result<Void> logout(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
         // 清除当前用户对应的在redis中的token
         String tokenKey = LOGIN_USER_KEY + token;
@@ -142,7 +175,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
-    public Result<Null> sign() {
+    public Result<Void> sign() {
         // 获取当前用户id和时间
         String userId = UserHolder.getUser().getId().toString();
         LocalDateTime now = LocalDateTime.now();

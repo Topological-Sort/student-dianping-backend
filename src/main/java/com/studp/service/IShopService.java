@@ -1,6 +1,6 @@
 package com.studp.service;
 
-import com.studp.dto.Null;
+import com.studp.dto.Void;
 import com.studp.dto.Result;
 import com.studp.entity.Shop;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -19,7 +19,7 @@ public interface IShopService extends IService<Shop> {
 
     Result<Shop> queryShopById(Long id);
 
-    Result<Null> updateShop(Shop shop);
+    Result<Void> updateShop(Shop shop);
 
     Result<List<Shop>> pageQueryShopByType(Integer typeId, Integer current, Double x, Double y);
 }

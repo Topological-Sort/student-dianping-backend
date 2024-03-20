@@ -1,7 +1,7 @@
 package com.studp.controller;
 
 
-import com.studp.dto.Null;
+import com.studp.dto.Void;
 import com.studp.dto.Result;
 import com.studp.dto.UserDTO;
 import com.studp.service.IFollowService;
@@ -23,7 +23,7 @@ public class FollowController {
      * @return 无
      */
     @PutMapping("/{id}/{isFollow}")
-    public Result<Null> follow(@PathVariable Long id,
+    public Result<Void> follow(@PathVariable Long id,
                                @PathVariable Boolean isFollow){
         return followService.follow(id, isFollow);
     }

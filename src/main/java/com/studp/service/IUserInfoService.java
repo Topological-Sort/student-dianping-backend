@@ -1,5 +1,6 @@
 package com.studp.service;
 
+import com.studp.dto.Result;
 import com.studp.entity.UserInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,4 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IUserInfoService extends IService<UserInfo> {
 
+    Result<UserInfo> getInfo(Long userId);
 }

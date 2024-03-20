@@ -1,5 +1,12 @@
 server:
   port: 8081
+#  tomcat:
+#    accept-count: 3000
+#    max-connections: 3000
+#    connection-timeout: 30000 # 单位ms
+#    threads:
+#      max: 3000
+#      min-spare: 3000
 
 spring:
   application:
@@ -10,16 +17,28 @@ spring:
     username: root
     password: nigun1748hk
   redis:
-    host: 192.168.70.128
+    host: 192.168.200.128
     port: 6379
-#    password: 123321
-    url: redis://123321@192.168.70.128:6379
+    password: 123321
+    url: redis://123321@192.168.200.128:6379
     lettuce:
       pool:  # redis连接池
         max-active: 10  # 最大连接
         max-idle: 10    # 最大空闲连接
         min-idle: 1     # 最小空闲连接
         time-between-eviction-runs: 10s  # 连接最长等待时间（超过则超时中断）
+  rabbitmq:
+    host: 192.168.200.128 # 你的虚拟机IP
+    port: 5672 # 端口
+    virtual-host: /dianping # 虚拟主机
+    username: dianping # 用户名
+    password: 123321 # 密码
+    #【发送者】【保证消息成功发送到MQ：confirm（ack、nack）、return机制】
+    publisher-confirm-type: correlated # 开启publisher confirm机制，并设置confirm类型
+    publisher-returns: true # 开启publisher return机制
+    listener:
+      simple:
+        acknowledge-mode: auto # 自动ack
   jackson:
     default-property-inclusion: non_null # JSON处理时忽略非空字段
 mybatis-plus:

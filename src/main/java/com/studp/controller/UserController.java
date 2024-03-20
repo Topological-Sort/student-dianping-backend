@@ -1,17 +1,13 @@
 package com.studp.controller;
 
 
-import cn.hutool.core.bean.BeanUtil;
-import com.studp.dto.Null;
+import com.studp.dto.Void;
 import com.studp.dto.LoginFormDTO;
 import com.studp.dto.Result;
 import com.studp.dto.UserDTO;
-import com.studp.entity.Blog;
-import com.studp.entity.User;
 import com.studp.entity.UserInfo;
 import com.studp.service.IUserInfoService;
 import com.studp.service.IUserService;
-import com.studp.utils.SystemConstants;
 import com.studp.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -19,16 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.List;
 
-/**
- * <p>
- * 前端控制器
- * </p>
- *
- * @author 虎哥
- * @since 2021-12-22
- */
 @Slf4j
 @RestController
 @RequestMapping("/user")
@@ -44,7 +31,7 @@ public class UserController {
      * 发送手机验证码
      */
     @PostMapping("/code")
-    public Result<Null> sendCode(@RequestParam("phone") String phone, HttpSession session) {
+    public Result<Void> sendCode(@RequestParam("phone") String phone, HttpSession session) {
         log.info("【User】发送验证码到手机号：{}", phone);
         return userService.sendCode(phone, session);
     }
@@ -55,7 +42,6 @@ public class UserController {
      */
     @PostMapping("/login")
     public Result<String> login(@RequestBody LoginFormDTO loginForm, HttpSession session){
-        log.info("【User】用户登录：{}", loginForm);
         return userService.login(loginForm, session);
     }
 
@@ -70,7 +56,7 @@ public class UserController {
      * @return 无
      */
     @PostMapping("/logout")
-    public Result<Null> logout(HttpServletRequest request){
+    public Result<Void> logout(HttpServletRequest request){
         return userService.logout(request);
     }
 
@@ -91,16 +77,7 @@ public class UserController {
      */
     @GetMapping("/info/{id}")
     public Result<UserInfo> info(@PathVariable("id") Long userId){
-        // 查询详情
-        UserInfo info = userInfoService.getById(userId);
-        if (info == null) {
-            // 没有详情，应该是第一次查看详情
-            return Result.ok();
-        }
-        info.setCreateTime(null);
-        info.setUpdateTime(null);
-        // 返回
-        return Result.ok(info);
+        return userInfoService.getInfo(userId);
     }
 
     /**
@@ -108,7 +85,7 @@ public class UserController {
      * @return 无
      */
     @PostMapping("/sign")
-    public Result<Null> sign(){
+    public Result<Void> sign(){
         return userService.sign();
     }
 

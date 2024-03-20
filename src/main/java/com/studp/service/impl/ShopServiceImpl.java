@@ -3,7 +3,7 @@ package com.studp.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.studp.dto.Null;
+import com.studp.dto.Void;
 import com.studp.dto.Result;
 import com.studp.entity.Shop;
 import com.studp.mapper.ShopMapper;
@@ -37,14 +37,15 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     @Override
     public Result<Shop> queryShopById(Long id) {  // ""cache + Mutex
         // 防缓存击穿：若缓存失效，所有线程对mysql的查询互斥
-        Shop shop = cacheClient.queryWithMutex(
-                id, Shop.class, this::getById,
-                CACHE_SHOP_TTL, TimeUnit.SECONDS);
+//        Shop shop = cacheClient.queryWithMutex(
+//                id, Shop.class, this::getById,
+//                CACHE_SHOP_TTL, TimeUnit.SECONDS);
+        Shop shop = shopMapper.selectById(id);
         return Result.ok(shop);
     }
 
     @Override
-    public Result<Null> updateShop(Shop shop) {
+    public Result<Void> updateShop(Shop shop) {
         /* 先更新mysql，再删除缓存。防止删除缓存并发线程执行查询操作，写入旧缓存 */
         if(shop.getId() == null){
             return Result.fail("店铺id不能为空");

@@ -40,7 +40,7 @@ public class UploadController {
     }
 
     @GetMapping("/blog/delete")
-    public Result deleteBlogImg(@RequestParam("name") String filename) {
+    public Result<Void> deleteBlogImg(@RequestParam("name") String filename) {
         File file = new File(SystemConstants.IMAGE_UPLOAD_DIR, filename);
         if (file.isDirectory()) {
             return Result.fail("错误的文件名称");

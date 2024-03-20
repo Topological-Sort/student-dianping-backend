@@ -1,7 +1,7 @@
 package com.studp.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.studp.dto.Null;
+import com.studp.dto.Void;
 import com.studp.dto.LoginFormDTO;
 import com.studp.dto.Result;
 import com.studp.dto.UserDTO;
@@ -24,13 +24,15 @@ public interface IUserService extends IService<User> {
 
     Result<String> login(LoginFormDTO loginForm, HttpSession session);
 
-    Result<Null> sendCode(String phone, HttpSession session);
+    Result<String> testLogin(LoginFormDTO loginForm);
+
+    Result<Void> sendCode(String phone, HttpSession session);
 
     Result<UserDTO> queryUserById(Long userId);
 
-    Result<Null> logout(HttpServletRequest request);
+    Result<Void> logout(HttpServletRequest request);
 
-    Result<Null> sign();
+    Result<Void> sign();
 
     Result<Integer> signCount();
 }

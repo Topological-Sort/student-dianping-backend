@@ -3,7 +3,7 @@ package com.studp.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.studp.dto.Null;
+import com.studp.dto.Void;
 import com.studp.dto.Result;
 import com.studp.entity.Shop;
 import com.studp.service.IShopService;
@@ -14,14 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * <p>
- * 前端控制器
- * </p>
- *
- * @author 虎哥
- * @since 2021-12-22
- */
 @RestController
 @RequestMapping("/shop")
 @RequiredArgsConstructor
@@ -60,7 +52,7 @@ public class ShopController {
      * @return 无
      */
     @PutMapping
-    public Result<Null> updateShop(@RequestBody Shop shop) {
+    public Result<Void> updateShop(@RequestBody Shop shop) {
         log.info("【Shop】更新商铺信息：{}", shop);
         return shopService.updateShop(shop);
     }

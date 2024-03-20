@@ -3,8 +3,9 @@ package com.studp.controller;
 
 import com.studp.dto.Result;
 import com.studp.service.IVoucherOrderService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +26,8 @@ import javax.annotation.Resource;
 @RequestMapping("/voucher-order")
 public class VoucherOrderController {
 
-    @Resource
+    @Autowired
+    @Qualifier("rabbitMQ")
     private IVoucherOrderService voucherOrderService;
 
     /**
@@ -35,7 +37,7 @@ public class VoucherOrderController {
      */
     @PostMapping("seckill/{id}")
     public Result<Long> seckillVoucher(@PathVariable("id") Long voucherId) throws InterruptedException {
-        log.info("【VoucherOrder/seckillVoucher】用户抢购秒杀券：id={}", voucherId);
+//        log.info("【VoucherOrder/seckillVoucher】用户抢购秒杀券：id={}", voucherId);
         return voucherOrderService.saveSeckillVoucherOrder(voucherId);
     }
 }
