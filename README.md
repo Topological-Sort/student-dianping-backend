@@ -1,6 +1,7 @@
 # student-dianping-back
 ## V3.0
-### 增加使用 RabbitMQ 实现优惠券秒杀（RabbitMQVoucherOrderServiceImpl）
+### 实现功能：
+#### 增加使用 RabbitMQ 实现优惠券秒杀（RabbitMQVoucherOrderServiceImpl）
 
 ## V2.0
 ### 实现功能：
