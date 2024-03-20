@@ -37,9 +37,10 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     @Override
     public Result<Shop> queryShopById(Long id) {  // ""cache + Mutex
         // 防缓存击穿：若缓存失效，所有线程对mysql的查询互斥
-        Shop shop = cacheClient.queryWithMutex(
-                id, Shop.class, this::getById,
-                CACHE_SHOP_TTL, TimeUnit.SECONDS);
+//        Shop shop = cacheClient.queryWithMutex(
+//                id, Shop.class, this::getById,
+//                CACHE_SHOP_TTL, TimeUnit.SECONDS);
+        Shop shop = shopMapper.selectById(id);
         return Result.ok(shop);
     }
 

@@ -30,7 +30,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         String token = request.getHeader("Authorization");
 //        log.info("[RefreshTokenInterceptor(1)] 校验和更新token，token={}", token);
         if(StrUtil.isBlank(token)){
-            log.info("[RefreshTokenInterceptor(1)] 用户未登录，直接放行");
+            log.info("[RefreshTokenInterceptor(1)] 用户未登录，不需要更新token，直接放行");
             return true;  // 没登陆，不需要更新，直接放行，交给下一个拦截器
         }
         // 2.根据key查询redis中（已登录）用户是否存在

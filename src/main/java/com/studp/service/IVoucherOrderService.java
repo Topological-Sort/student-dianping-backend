@@ -18,7 +18,6 @@ public interface IVoucherOrderService extends IService<VoucherOrder> {
 
     void createVoucherOrder(VoucherOrder voucherOrder);
 
-
     // 悲观锁实现子方法
 //    Result<Long> createVoucherOrder(Long voucherId, Long id);
 }
